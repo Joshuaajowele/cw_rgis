@@ -19,6 +19,25 @@ sf_site <- df_fish %>%
 print(sf_site)
 
 #view map
-gg<-mapview(sf_site,
+mapview(sf_site,
         legend = FALSE)
-gg
+
+#save new data as a r file
+saveRDS(sf_site,
+        file = "data/sf_finsync_nc.rds")
+
+#convert from geodetic to projected####
+#subset to two rows for 
+sf_ft_wgs <- sf_site %>% 
+  slice(c(1, 2))
+
+print(sf_ft_wgs)
+#change geodetic to projected (3 dimen to 2 dimension)
+sf_ft_utm <- sf_ft_wgs %>% 
+  st_transform(crs = 32617)
+
+print(sf_ft_utm)
+
+
+#distance between two points
+st_distance(sf_ft_utm)
