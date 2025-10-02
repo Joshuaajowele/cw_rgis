@@ -91,7 +91,72 @@ ggplot() +
   
 #displaying only Ashe county
   #ggplot
-  ggplot() +
-    geom_sf(data = sf_nc_ashe) +
-    geom_sf(data = sf_str_as) 
-  
+ggplot() +
+  geom_sf(data = sf_nc_ashe) +
+  geom_sf(data = sf_str_as)
+
+#Joining spatial vector data####
+#join survey site with county polygon
+sf_site_join <- st_join(x = sf_site, # base layer
+                        y = sf_nc_county) # overlaying layer
+
+#subsetting points in Guilford county
+sf_site_guilford <- sf_site_join %>% 
+  filter(county == "guilford")
+#recreate map focusing on Guildford
+#subsetting Guildford polygon
+sf_nc_guilford <- sf_nc_county %>% 
+  filter(county == "guilford")
+ggplot() +
+  geom_sf(data = sf_nc_guilford) +
+  geom_sf(data = sf_str) +
+  geom_sf(data = sf_site_guilford) +
+  theme_bw()
+#customize 
+ggplot() +
+  geom_sf(data = sf_nc_guilford) +
+  geom_sf(data = sf_str,
+          color = "steelblue") +
+  geom_sf(data = sf_site_guilford,
+          color = "salmon") +
+  theme_bw()
+
+#Geometric analysis####
+#geodetic CRS should not be used for calculations...
+#transform to an appropriate projected CRS based on location
+(sf_str_proj <- st_transform(sf_str, crs = 32617))
+#calcuate length of each stream segmentin metres
+v_str_l <- st_length(sf_str_proj)
+
+# print the first 10 elements
+head(v_str_l)
+#add new calculation
+(sf_str_w_len <- sf_str %>% 
+    mutate(length = v_str_l))
+
+#redo the process in one go
+sf_str_w_len <- sf_str %>% 
+  st_transform(crs = 32617) %>%       # transform to projected CRS (utm zone 17n) for accurate length calculation
+  mutate(length = st_length(.)) %>%   # calculate length of each feature and store it in a new column
+  st_transform(crs = 4326)           # transform back to geographic CRS (wgs84) for consistency with other layers
+
+# # the above code returns identical results with the code below
+# sf_str_proj <- st_transform(sf_str, crs = 32617)
+# v_str_l <- st_length(sf_str_proj)               
+# sf_str <- sf_str %>% 
+#   mutate(length = v_str_l)                      
+
+#claulate area of polygon
+(sf_nc_county_w_area <- sf_nc_county %>% 
+    st_transform(crs = 32617) %>%       # transform to projected CRS (utm zone 17n) for accurate area calculation
+    mutate(area = st_area(.)) %>%       # calculate area of each polygon and store it in a new column
+    st_transform(crs = 4326))           # transform back to geographic CRS (wgs84) for consistency with other layers
+#filter area above 1000 km2
+(sf_nc_county_1000 <- sf_nc_county_w_area %>% 
+    mutate(area = as.numeric(area) / 1e+6) %>% #convert to km2
+    filter(area > 1000))
+
+#view
+ggplot() +
+  geom_sf(data = sf_nc_county_1000) +
+  theme_bw()
