@@ -73,7 +73,7 @@ mean(v_bin)
 ext(spr_prec)
 ## crop to:
 ## longitude range: -80 to -75
-## latitude range: 34 to 37
+## latitude range: 34 to 37 #order matters (xmin, xmax, ymin, ymax)
 spr_prec_crop <- crop(x = spr_prec,
                       y = c(-80, -75, 34, 37))
 
