@@ -144,7 +144,8 @@ spr_pt_nc$precipitation
 
 #convert projected 
 (spr_prec_nc_proj <- project(x = spr_prec_nc,
-                             y = "EPSG:32617"))
+                             y = "EPSG:32617", 
+                             method = "bilinear"))
 #terra::project uses automatic resampling method= near for discrete abd bilinear for continous
 #reprojecrion to geodetic CRS with raster data will not yield the original Geodetic values
 #because of the resampling method applied. However, reprojection will be the same with vector data
